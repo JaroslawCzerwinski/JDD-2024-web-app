@@ -1,0 +1,27 @@
+name: "Web-App-CI"
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build_and_published:
+    name: Build and published image
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Set web-app version
+        run: |
+          APP_VERSION=$(grep -oP '(?<=version )[\d.]+(?=</h1>)' index.html)
+          echo "web-app version: $APP_VERSION"
+          echo "APP_VERSION=$APP_VERSION" >> "$GITHUB_ENV"
+
+      - name: Build and publish a Docker image
+        uses: macbre/push-to-ghcr@master
+        with:
+          image_name: red-devops/web-app
+          image_tag: ${{ env.APP_VERSION }}
+          github_token: ${{ secrets.docker_token }}
+        
